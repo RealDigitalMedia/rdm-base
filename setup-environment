@@ -29,7 +29,7 @@ usage()
     echo -e "\nUsage: source $PROGNAME <build-dir>
     <build-dir>: required option; specifies build directory location
 
-By default the script will setup MACHINE to be imx6qsabresd.
+By default the script will setup MACHINE to be wbd.
 
 Supported machines: `ls sources/*/conf/machine/*.conf \
 | sed s/\.conf//g | sed -r 's/^.+\///' | xargs echo`
@@ -80,7 +80,7 @@ if [ "$(whoami)" = "root" ]; then
 fi
 
 if [ -z "$MACHINE" ]; then
-    MACHINE='imx6qsabresd'
+    MACHINE='wbd'
 fi
 
 # Check the machine type specified
@@ -164,46 +164,6 @@ EOF
     done
 
     generated_config=1
-fi
-
-# Handle EULA setting
-if [ -z "$EULA" ] && ! grep -q '^ACCEPT_FSL_EULA\s*=' conf/local.conf; then
-    EULA='ask'
-fi
-
-if [ "$EULA" = "ask" ]; then
-    cat <<EOF
-
-Some SoC depends on libraries and packages that are covered by
-Freescale EULA. To have the right to use those binaries in your images
-you need to read and accept the EULA that will be displayed.
-
-EOF
-
-    sleep 4
-
-    more -d $CWD/sources/meta-fsl-arm/EULA
-    echo
-    while [ "$EULA" = "ask" ]; do
-        echo -n "Do you accept the EULA you just read? (y/n) "
-        read REPLY
-        case "$REPLY" in
-            y|Y)
-            echo "EULA has been accepted."
-            EULA="1"
-            ;;
-            n|N)
-            echo "EULA has not been accepted."
-            EULA="0"
-            ;;
-        esac
-    done
-fi
-
-if grep -q '^ACCEPT_FSL_EULA\s*=' conf/local.conf; then
-    sed -i "s/^#*ACCEPT_FSL_EULA\s*=.*/ACCEPT_FSL_EULA = \"$EULA\"/g" conf/local.conf
-else
-    echo "ACCEPT_FSL_EULA = \"$EULA\"" >> conf/local.conf
 fi
 
 cat <<EOF
