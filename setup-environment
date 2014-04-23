@@ -80,11 +80,11 @@ if [ "$(whoami)" = "root" ]; then
 fi
 
 if [ -z "$MACHINE" ]; then
-    MACHINE='wbd'
+    MACHINE='shuttle'
 fi
 
 # Check the machine type specified
-LIST_MACHINES=`ls -1 $CWD/sources/*/conf/machine`
+LIST_MACHINES=$(find $CWD/sources/ -type d -name machine | grep 'meta.*/conf/machine$' | xargs -I path -- ls -1 path)
 VALID_MACHINE=`echo -e "$LIST_MACHINES" | grep ${MACHINE}.conf$ | wc -l`
 if [ "x$MACHINE" = "x" ] || [ "$VALID_MACHINE" = "0" ]; then
     echo -e "\nSPECIFIED AN INVALID MACHINE TYPE !"
@@ -108,8 +108,12 @@ if [ -e sources/oe-core ]; then
 fi
 
 # Ensure all files in sources/base are kept in sync with project root
+if [ -z "$BASE" ]; then
+    BASE='meta-rdm/base'
+fi
+BASE=base
 updated=
-for f in $CWD/sources/base/*; do
+for f in $CWD/sources/$BASE/*; do
     file="$(basename $f)"
     if [ "$file" = "conf" ] || echo $file | grep -q '~$'; then
         continue
@@ -139,7 +143,7 @@ if [ ! -e conf/local.conf.sample ]; then
     mv conf/local.conf conf/local.conf.sample
 
     # Generate the local.conf based on the Yocto defaults
-    TEMPLATES=$CWD/sources/base/conf 
+    TEMPLATES=$CWD/sources/$BASE/conf 
     grep -v '^#\|^$' conf/local.conf.sample > conf/local.conf
     cat >> conf/local.conf <<EOF
 
